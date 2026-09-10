@@ -1,40 +1,46 @@
 # AI Educational Schemes Recommendation System
 
-## Dataset
-Main dataset:
-`data/educational_schemes_min_marks_cleaned.csv`
+## Updated dataset
+The project uses:
+`data/educational_schemes_preprocessed_v2.csv`
 
-The application does not use an `official_link` column.
+The preprocessing standardizes numeric eligibility fields and education labels and removes the obsolete `course` field. The dataset does not contain `institution_type`.
 
-### Important data convention
-- `min_marks = 0` means **no documented minimum marks requirement**.
-- `max_income = -1` means **no income limit**.
+## Prediction features
+Both of these are used by the eligibility engine, feature engineering, and ML model:
+- `education_level`
+- `education_stream`
+
+Other profile features:
+- Age
+- Gender
+- Caste Category
+- Annual Family Income
+- State
+- Marks / Percentage
+
+## Recommendation pipeline
+Student Profile -> Rule-based Eligibility -> Eligible Schemes -> Feature Encoding -> Random Forest Regressor -> Match Score -> Top Recommendations
 
 ## Run
 ```bash
 pip install streamlit pandas numpy scikit-learn joblib
+python train.py
 streamlit run app.py
 ```
 
-## Model training
-If you have a `train_model.py`, update it to use:
-`data/educational_schemes_min_marks_cleaned.csv`
+Run `python train.py` after changing the dataset so the model is retrained with the current feature set.
 
-`features.py` can generate:
-`data/training_pairs.csv`
+## Model files
+- `models/match_score_regressor.joblib`
+- `models/metrics.json`
 
-The application can also run without a trained regressor; it uses a fallback relevance score until the ML model is trained.
+## Important data conventions
+- `min_marks = 0` means no documented minimum marks requirement.
+- `max_income = -1` means no income limit.
+- `All` is treated as a wildcard for applicable categorical eligibility fields.
 
-## Profile Form
-The Profile Form uses dropdown/select controls instead of text input for:
-- Age
-- Gender
-- Caste
-- Education Level
-- Annual Income
-- State
-- Course
-- Marks
-- Institution Type
-
-The chatbot tab remains free-text because it is specifically the natural-language profile parser.
+## Chatbot
+The chatbot extracts:
+Age, Gender, Caste, Income, State, Education Level, Education Stream, and Marks.
+It no longer asks for or predicts using Course or Institution Type.

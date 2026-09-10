@@ -1,7 +1,7 @@
 {
     "RandomForestRegressor": {
-        "MAE": 0.0085,
+        "MAE": 0.006,
         "MSE": 0.0002,
-        "R2 Score": 0.9838
+        "R2 Score": 0.9906
     }
 }

@@ -12,7 +12,7 @@ import streamlit as st
 
 from eligibility_engine import load_schemes
 from recommender import recommend
-from chatbot_parser import parse_profile, INDIAN_STATES
+from chatbot_parser import parse_profile, INDIAN_STATES, EDUCATION_STREAM_KEYWORDS
 
 st.set_page_config(page_title="AI Educational Scheme Recommender", page_icon="🎓", layout="wide")
 
@@ -20,9 +20,10 @@ CASTE_OPTIONS = ["General", "OBC", "SC", "ST", "Minority"]
 GENDER_OPTIONS = ["Male", "Female", "Transgender"]
 EDUCATION_LEVEL_OPTIONS = ["School", "Senior Secondary", "Diploma",
                            "Undergraduate", "Postgraduate", "PhD"]
-COURSE_OPTIONS = ["General/Any", "Engineering", "Medical", "Arts", "Science",
-                   "Commerce", "Law", "Management", "Vocational/ITI"]
-INSTITUTION_TYPE_OPTIONS = ["Government", "Private", "Aided"]
+EDUCATION_STREAM_OPTIONS = [
+    "General", "Engineering & Technology", "Medical & Health", "Science",
+    "Commerce & Management", "Arts & Humanities", "Law", "Agriculture", "Education"
+]
 
 # ------------------------------------------------------------------
 # CUSTOM CSS  (gradients, fade/slide-in animations, hover effects,
@@ -276,7 +277,7 @@ div.stButton > button:active { transform: translateY(0px); }
 
 @st.cache_data
 def get_schemes():
-    return load_schemes("data/educational_schemes_min_marks_cleaned.csv")
+    return load_schemes("data/educational_schemes_preprocessed_v2.csv")
 
 
 def render_results(results: pd.DataFrame):
@@ -323,12 +324,12 @@ def render_results(results: pd.DataFrame):
 
 
 def profile_to_citizen(age, gender, caste, income, state, education_level,
-                        course, marks_percentage, institution_type):
+                        education_stream, marks_percentage):
     return {"age": age, "gender": gender, "caste_category": caste,
             "income": income, "state": state,
-            "education_level": education_level, "course": course,
-            "marks_percentage": marks_percentage,
-            "institution_type": institution_type}
+            "education_level": education_level,
+            "education_stream": education_stream,
+            "marks_percentage": marks_percentage}
 
 
 def kpi_card(number, label):
@@ -387,7 +388,7 @@ with tab1:
 
     col4, col5, col6 = st.columns(3)
     with col4:
-        course = st.selectbox("Course / Stream", COURSE_OPTIONS)
+        education_stream = st.selectbox("Education Stream", EDUCATION_STREAM_OPTIONS)
     with col5:
         marks_percentage = st.selectbox(
             "Marks / Percentage (%)",
@@ -396,18 +397,18 @@ with tab1:
             format_func=lambda x: f"{x:g}%"
         )
     with col6:
-        institution_type = st.selectbox("Institution Type", INSTITUTION_TYPE_OPTIONS)
+        st.empty()
 
     if st.button("🔍  Find Eligible Schemes", type="primary", key="form_search"):
         citizen = profile_to_citizen(
             age, gender, caste, income, state,
-            education_level, course, marks_percentage, institution_type
+            education_level, education_stream, marks_percentage
         )
         with st.spinner("Matching your profile against eligibility rules and ML rankings..."):
             time.sleep(0.4)
             results = recommend(
                 citizen,
-                schemes_path="data/educational_schemes_min_marks_cleaned.csv",
+                schemes_path="data/educational_schemes_preprocessed_v2.csv",
                 top_n=15
             )
         render_results(results)
@@ -443,7 +444,7 @@ with tab2:
             else:
                 with st.spinner("Matching your profile..."):
                     time.sleep(0.3)
-                    results = recommend(parsed, schemes_path="data/educational_schemes_min_marks_cleaned.csv", top_n=15)
+                    results = recommend(parsed, schemes_path="data/educational_schemes_preprocessed_v2.csv", top_n=15)
                 render_results(results)
 
 # ------------------------------------------------------------------
@@ -475,8 +476,8 @@ with tab3:
         st.markdown("**🎓 Schemes by Education Level**")
         st.bar_chart(schemes["education_level"].value_counts(), color="#f6a5c0")
     with colD:
-        st.markdown("**📚 Schemes by Course**")
-        st.bar_chart(schemes["course"].value_counts(), color="#6a82fb")
+        st.markdown("**📚 Schemes by Education Stream**")
+        st.bar_chart(schemes["education_stream"].value_counts(), color="#6a82fb")
 
     colE, colF = st.columns(2)
     with colE:
