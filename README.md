@@ -39,8 +39,3 @@ Run `python train.py` after changing the dataset so the model is retrained with 
 - `min_marks = 0` means no documented minimum marks requirement.
 - `max_income = -1` means no income limit.
 - `All` is treated as a wildcard for applicable categorical eligibility fields.
-
-## Chatbot
-The chatbot extracts:
-Age, Gender, Caste, Income, State, Education Level, Education Stream, and Marks.
-It no longer asks for or predicts using Course or Institution Type.
